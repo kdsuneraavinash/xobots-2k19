@@ -1,69 +1,46 @@
-import numpy as np
 import cv2
-import algorithms
-import math
+import numpy as np
 
-cap = cv2.VideoCapture(0)
+COLOR_RED = (0, 0, 255)
+COLOR_GREEN = (0, 255, 0)
+COLOR_BLUE = (255, 0, 0)
+COLOR_PURPLE = (255, 0, 255)
 
 
-def reduce_lines(lines):
-    gvf, avgs_1 = algorithms.jnb_algorithm_r4(lines)
-    if gvf < 0.8:
-        return []  # Bad detection - not a good split
-    return avgs_1
+def draw_dot(image, position, color=(0, 0, 255)):
+    cv2.circle(image, position, 5, color, -1)
 
+
+url = 'http://192.168.8.100:8080/video'
+cap = cv2.VideoCapture(url)
+
+corner_tl = (140, 225)
+corner_tr = (465, 185)
+corner_bl = (180, 445)
+corner_br = (580, 390)
 
 while(True):
     ret, frame = cap.read()
+    frame = cv2.resize(frame, (800, 600))
+    frame = cv2.rotate(frame, cv2.ROTATE_90_CLOCKWISE)
 
-    grayscaled = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    draw_dot(frame, corner_tl, COLOR_RED)
+    draw_dot(frame, corner_tr, COLOR_GREEN)
+    draw_dot(frame, corner_bl, COLOR_BLUE)
+    draw_dot(frame, corner_br, COLOR_PURPLE)
 
-    blur = cv2.GaussianBlur(grayscaled, (5, 5), 0)
-    threshed = cv2.adaptiveThreshold(
-        blur, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 115, 11)
-    edges = cv2.Canny(threshed, 100, 200)
+    pts1 = np.float32([corner_tl, corner_tr, corner_bl, corner_br])
+    pts2 = np.float32([[0, 0], [300, 0], [0, 300], [300, 300]])
+    M = cv2.getPerspectiveTransform(pts1, pts2)
+    dst = cv2.warpPerspective(frame, M, (300, 300))
 
-    kernel = np.ones((7, 7), np.uint8)
-    dilation = cv2.dilate(edges, kernel, iterations=1)
-    erosion = cv2.erode(dilation, kernel, iterations=1)
-
-    line_thresh = 0.3
-    x_lines = cv2.HoughLines(erosion, 1, np.pi/180, 250,
-                             min_theta=math.pi/2-line_thresh, max_theta=math.pi/2+line_thresh)
-    y_lines = cv2.HoughLines(erosion, 1, np.pi/180, 250,
-                             min_theta=-line_thresh, max_theta=line_thresh)
-    drawn_img = np.copy(frame)
-
-    if x_lines is not None and len(x_lines) > 0:
-        if y_lines is not None and len(y_lines) > 0:
-            x_lines = np.reshape(x_lines, (-1, 2))
-            x_theta = x_lines[0][1]
-            x_intersects = reduce_lines([p[0] for p in x_lines])
-            if len(x_intersects) == 0:
-                continue
-
-            y_lines = np.reshape(y_lines, (-1, 2))
-            y_theta = y_lines[0][1]
-            y_intersects = reduce_lines([p[0] for p in y_lines])
-            if len(y_intersects) == 0:
-                continue
-
-            intersection_points = []
-            for x_intersect in x_intersects:
-                for y_intersect in y_intersects:
-                    y = (y_intersect - x_intersect*np.tan(x_theta)) / \
-                        (np.tan(y_theta) - np.tan(x_theta))
-                    x = (x_intersect - y)*np.tan(x_theta)
-                    intersection_points.append((x, y))
-
-            for intersection_point in intersection_points:
-                cv2.circle(drawn_img, intersection_point, 3, (0, 0, 255), -1)
-
-    cv2.imshow('frame', erosion)
-    cv2.imshow('lines drawn', drawn_img)
-
-    if cv2.waitKey(1) & 0xFF == ord('q'):
+    if frame is not None:
+        cv2.imshow('frame', frame)
+        cv2.imshow('warped', dst)
+    q = cv2.waitKey(1)
+    if q == ord("q"):
         break
+
 
 cap.release()
 cv2.destroyAllWindows()
