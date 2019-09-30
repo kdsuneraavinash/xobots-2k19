@@ -13,43 +13,20 @@ def find_deviation_raised(points):
     return np.sum(raised)
 
 
-def jnb_algorithm_r2(data_points):
-    data = [p[1] for p in data_points]
-
-    if len(data) == 0 or None in data:
-        return None, None, None
-
-    data = sorted(data)
-    sdam = find_deviation_raised(data)
-
-    best_mid_point = None
-    best_sdcm = 0
-    for range_mid_point in range(1, len(data)):
-        range_1 = data[:range_mid_point]
-        range_2 = data[range_mid_point:]
-        sdcm_all = find_deviation_raised(
-            range_1) + find_deviation_raised(range_2)
-
-        if best_sdcm < sdcm_all:
-            best_sdcm = sdcm_all
-            best_mid_point = range_mid_point
-
-    gvf = (sdam - best_sdcm)/sdam
-    return gvf, [best_1_data, best_2_data]
-
-
 def jnb_algorithm_r4(data):
     if len(data) == 0 or None in data:
-        return None, None, None
+        return 0, [None, None, None, None]
 
     data = sorted(data)
     sdam = find_deviation_raised(data)
+    if sdam == 0 or sdam == np.nan:
+        return 0, [None, None, None, None]
 
     best_1_avg = None
     best_2_avg = None
     best_3_avg = None
     best_4_avg = None
-    best_sdcm = 0
+    best_sdcm = sdam
 
     for a in range(1, len(data)):
         for b in range(a + 1, len(data)):
@@ -69,7 +46,7 @@ def jnb_algorithm_r4(data):
                     find_deviation_raised(range_3) +\
                     find_deviation_raised(range_4)
 
-                if best_sdcm < sdcm_all:
+                if best_sdcm > sdcm_all:
                     best_sdcm = sdcm_all
                     best_1_avg = avg_1
                     best_2_avg = avg_2
@@ -81,10 +58,6 @@ def jnb_algorithm_r4(data):
 
 
 if __name__ == "__main__":
-    data = np.array([4, 5, 9, 10])
-    v = jnb_algorithm_r2(data)
-    print(v)
-
     data = np.array([4, 9, 10, 33, 21, 44, 3, 2, 5, 9, 10])
     v = jnb_algorithm_r4(data)
     print(v)
