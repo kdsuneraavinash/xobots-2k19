@@ -2,6 +2,16 @@
 
 ## Image Processing
 
+### Running
+
+You need following python dependencies. (Python 3.5)
+
+- opencv
+- numpy
+
+Connect to mobile phone camera using `IP Webcam` app and use the IP.
+Enter to 4 points coordinates manually.
+
 ### Steps
 
 The steps taken to process a image is as follows,

@@ -1,0 +1,68 @@
+#:kivy 1.11.1
+
+<XoBotGame>:    
+    BoxLayout:
+        orientation: 'vertical'
+        pos: root.pos
+        size: root.size
+
+        GridLayout:
+            rows: 3
+            spacing: 3
+            padding: 3
+
+            Button:
+                on_press: app.root.pressed(0)
+                font_size: 64
+                markup: True
+                text: root.grid00
+            Button:
+                on_press: app.root.pressed(1)
+                font_size: 64
+                markup: True
+                text: root.grid01
+            Button:
+                on_press: app.root.pressed(2)
+                font_size: 64
+                markup: True
+                text: root.grid02
+            Button:
+                on_press: app.root.pressed(3)
+                font_size: 64
+                markup: True
+                text: root.grid10
+            Button:
+                on_press: app.root.pressed(4)
+                font_size: 64
+                markup: True
+                text: root.grid11
+            Button:
+                on_press: app.root.pressed(5)
+                font_size: 64
+                markup: True
+                text: root.grid12
+            Button:
+                on_press: app.root.pressed(6)
+                font_size: 64
+                markup: True
+                text: root.grid20
+            Button:
+                on_press: app.root.pressed(7)
+                font_size: 64
+                markup: True
+                text: root.grid21
+            Button:
+                on_press: app.root.pressed(8)
+                font_size: 64
+                markup: True
+                text: root.grid22
+        Label:
+            size_hint_y: None
+            text: root.current_message
+        Button:
+            size_hint_y: None
+            on_press: app.root.initialize_game()
+            font_size: 16
+            markup: True
+            text: 'Restart App'
+
