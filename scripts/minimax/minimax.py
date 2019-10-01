@@ -73,7 +73,7 @@ class Game:
 
         return BOARD_EMPTY
 
-    def maximize(self):
+    def maximize(self, alpha, beta):
         max_value = -2
         px = py = None
 
@@ -90,16 +90,21 @@ class Game:
             for j in range(3):
                 if self.is_cell_empty(i, j):
                     self._current_state[i][j] = self._player_sign
-                    (m, min_i, min_j) = self.minimize()
+                    (m, min_i, min_j) = self.minimize(alpha, beta)
                     if m > max_value:
                         max_value = m
                         px = i
                         py = j
                     self._current_state[i][j] = BOARD_EMPTY
 
+                    if max_value >= beta:
+                        return (max_value, px, py)
+                    if max_value > alpha:
+                        alpha = max_value
+
         return (max_value, px, py)
 
-    def minimize(self):
+    def minimize(self, alpha, beta):
         min_value = 2
         qx = qy = None
 
@@ -116,12 +121,17 @@ class Game:
             for j in range(3):
                 if self.is_cell_empty(i, j):
                     self._current_state[i][j] = self._enemy_sign
-                    (m, max_i, max_j) = self.maximize()
+                    (m, max_i, max_j) = self.maximize(alpha, beta)
                     if m < min_value:
                         min_value = m
                         qx = i
                         qy = j
                     self._current_state[i][j] = BOARD_EMPTY
+
+                    if min_value <= alpha:
+                        return (min_value, qx, qy)
+                    if min_value < beta:
+                        beta = min_value
 
         return (min_value, qx, qy)
 
@@ -142,7 +152,7 @@ class Game:
     def get_best_prediction(self, board):
         self.set_board(board)
         start = time.time()
-        (m, px, py) = self.maximize()
+        (m, px, py) = self.maximize(-2, 2)
         end = time.time()
         return (end-start), (px, py), m
 
