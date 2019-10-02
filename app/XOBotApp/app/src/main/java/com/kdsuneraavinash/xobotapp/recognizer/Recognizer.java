@@ -1,5 +1,6 @@
 package com.kdsuneraavinash.xobotapp.recognizer;
 
+import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
 import org.opencv.core.Scalar;
@@ -8,11 +9,11 @@ import org.opencv.imgproc.Imgproc;
 
 import static org.opencv.core.Core.bitwise_or;
 import static org.opencv.core.Core.inRange;
-import static org.opencv.core.CvType.CV_16U;
 
 
 public class Recognizer {
     private static final int GRID_SIZE = 300;
+    static final int SQUARE_SIZE = GRID_SIZE / 3;
 
     private static final Scalar HSV_LOWER_GREEN = new Scalar(10, 100, 50);
     private static final Scalar HSV_UPPER_GREEN = new Scalar(100, 255, 255);
@@ -25,10 +26,8 @@ public class Recognizer {
     private Point cornerTR;
     private Point cornerBL;
     private Point cornerBR;
-    private Mat image;
 
-    public Recognizer(Mat image, Point cornerTL, Point cornerTR, Point cornerBL, Point cornerBR) {
-        this.image = image;
+    public Recognizer(Point cornerTL, Point cornerTR, Point cornerBL, Point cornerBR) {
         this.cornerTL = cornerTL;
         this.cornerTR = cornerTR;
         this.cornerBL = cornerBL;
@@ -39,43 +38,25 @@ public class Recognizer {
         Imgproc.circle(image, position, 5, Colors.COLOR_YELLOW, -1);
     }
 
-    public SymbolColor[][] identifyGrid() {
-        // Resize
-        Mat resized = new Mat();
-        Imgproc.resize(image, resized, new Size(800, 600));
-
+    public SymbolColor[][] identifyGrid(Mat image) {
         // Draw 4 points
-        drawDot(resized, cornerTL);
-        drawDot(resized, cornerTR);
-        drawDot(resized, cornerBL);
-        drawDot(resized, cornerBR);
+        drawDot(image, cornerTL);
+        drawDot(image, cornerTR);
+        drawDot(image, cornerBL);
+        drawDot(image, cornerBR);
 
         // Warp image
-        Mat pts1 = Mat.ones(4, 2, CV_16U);
-        Mat pts2 = Mat.ones(4, 2, CV_16U);
-        pts1.put(0, 0, cornerTL.x);
-        pts1.put(0, 1, cornerTL.y);
-        pts1.put(1, 0, cornerTR.x);
-        pts1.put(1, 1, cornerTR.y);
-        pts1.put(2, 0, cornerBL.x);
-        pts1.put(2, 1, cornerBL.y);
-        pts1.put(3, 0, cornerBR.x);
-        pts1.put(3, 1, cornerBR.y);
-        pts2.put(0, 0, 0);
-        pts2.put(0, 1, 0);
-        pts2.put(1, 0, GRID_SIZE);
-        pts2.put(1, 1, 0);
-        pts2.put(2, 0, 0);
-        pts2.put(2, 1, GRID_SIZE);
-        pts2.put(3, 0, GRID_SIZE);
-        pts2.put(3, 1, GRID_SIZE);
+        Mat pts1 = new Mat(4, 1, CvType.CV_32FC2);
+        Mat pts2 = new Mat(4, 1, CvType.CV_32FC2);
+        pts1.put(0, 0, cornerTL.x, cornerTL.y, cornerTR.x, cornerTR.y, cornerBL.x, cornerBL.y, cornerBR.x, cornerBR.y);
+        pts2.put(0, 0, 0f, 0f, GRID_SIZE, 0f, 0f, GRID_SIZE, GRID_SIZE, GRID_SIZE);
         Mat M = Imgproc.getPerspectiveTransform(pts1, pts2);
         Mat warped = new Mat();
-        Imgproc.warpPerspective(resized, warped, M, new Size(GRID_SIZE, GRID_SIZE));
+        Imgproc.warpPerspective(image, warped, M, new Size(GRID_SIZE, GRID_SIZE));
 
         // Get HSV image
         Mat hsv = new Mat();
-        Imgproc.cvtColor(warped, hsv, Imgproc.COLOR_BGR2HSV);
+        Imgproc.cvtColor(warped, hsv, Imgproc.COLOR_RGB2HSV);
 
         // Define masks
         Mat greenMask = new Mat();
@@ -94,12 +75,31 @@ public class Recognizer {
 
         for (int i = 0; i < 3; i++) {
             for (int j = 0; j < 3; j++) {
-                gridImg[i][j] = new SquareCell(cornerTL, cornerBR, redMask, greenMask, warped);
+                gridImg[i][j] = new SquareCell(redMask, greenMask, warped, SQUARE_SIZE * i,
+                        SQUARE_SIZE * (i + 1), SQUARE_SIZE * j, SQUARE_SIZE * (j + 1));
+
                 gridImg[i][j].findColors();
                 gridImg[i][j].drawSquareWithDetectedColors();
                 grid[i][j] = gridImg[i][j].detectColor();
+                Mat rowRange = image.rowRange(image.rows() - GRID_SIZE, image.rows());
+                Mat cellRange = rowRange.colRange(image.cols() - GRID_SIZE, image.cols());
+                warped.copyTo(cellRange);
+                rowRange.release();
+                cellRange.release();
+                gridImg[i][j].release();
             }
         }
+
+        warped.release();
+        hsv.release();
+        redMask.release();
+        greenMask.release();
+        redMask1.release();
+        redMask2.release();
+        pts1.release();
+        pts2.release();
+        M.release();
+
         return grid;
     }
 }

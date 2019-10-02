@@ -166,6 +166,10 @@ public class MinimaxGame implements IMinimaxGame {
         return currentBoard;
     }
 
+    public void setCurrentBoard(SymbolType[][] currentBoard) {
+        this.currentBoard = currentBoard;
+    }
+
     public SymbolType getPlayerSymbol() {
         return playerSymbol;
     }

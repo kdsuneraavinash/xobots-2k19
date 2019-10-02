@@ -1,5 +1,5 @@
 package com.kdsuneraavinash.xobotapp.recognizer;
 
-enum SymbolColor {
+public enum SymbolColor {
     RED_COLOR, GREEN_COLOR, NO_COLOR
 }

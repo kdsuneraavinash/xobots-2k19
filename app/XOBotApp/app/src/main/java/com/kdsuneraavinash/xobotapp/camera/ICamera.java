@@ -8,4 +8,6 @@ public interface ICamera {
     void pause();
 
     void resume();
+
+    void attachImageProcessor(ImageProcessor processor);
 }

@@ -6,31 +6,37 @@ import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
 
 import static org.opencv.core.Core.FONT_HERSHEY_SIMPLEX;
+import static org.opencv.core.Core.countNonZero;
 
 public class SquareCell implements ISquareCell {
     private static final int RED_COUNT_THRESH = 500;
     private static final int GREEN_COUNT_THRESH = 500;
 
-    private final Point topLeft;
-    private final Point bottomRight;
     private final Mat redMask;
     private final Mat greenMask;
     private final Mat image;
     private int greenCount;
     private int redCount;
 
-    SquareCell(Point topLeft, Point bottomRight, Mat redMask, Mat greenMask, Mat warpedImage) {
-        this.topLeft = topLeft;
-        this.bottomRight = bottomRight;
-        this.redMask = redMask;
-        this.greenMask = greenMask;
-        this.image = warpedImage;
+    SquareCell(Mat redMask, Mat greenMask, Mat warpedImage, int rowStart, int rowEnd, int colStart, int colEnd) {
+        Mat rowRange = warpedImage.rowRange(rowStart, rowEnd);
+        this.image = rowRange.colRange(colStart, colEnd);
+        rowRange.release();
+
+        rowRange = redMask.rowRange(rowStart, rowEnd);
+        this.redMask = rowRange.colRange(colStart, colEnd);
+        rowRange.release();
+
+        rowRange = greenMask.rowRange(rowStart, rowEnd);
+        this.greenMask = rowRange.colRange(colStart, colEnd);
+        rowRange.release();
+
         greenCount = -1;
         redCount = -1;
     }
 
     private void drawSquare(Scalar color) {
-        Imgproc.rectangle(image, new Point(topLeft.x + 5, topLeft.y + 5), new Point(bottomRight.x - 5, bottomRight.y - 5), color, 2);
+        Imgproc.rectangle(image, new Point(5, 5), new Point(Recognizer.SQUARE_SIZE - 5, Recognizer.SQUARE_SIZE - 5), color, 2);
     }
 
     private void type(String text, Point position, int yPadding) {
@@ -49,31 +55,13 @@ public class SquareCell implements ISquareCell {
     }
 
     private void findRedColor() {
-        if (redCount == -1) {
-            redCount = 0;
-            for (int r = (int) topLeft.y; r < bottomRight.y; r++) {
-                for (int c = (int) topLeft.x; c < bottomRight.x; c++) {
-                    if (redMask.get(r, c)[0] == 255) {
-                        redCount++;
-                    }
-                }
-            }
-            type("Red " + redCount, topLeft, 20);
-        }
+        redCount = countNonZero(redMask);
+        type("Red " + redCount, new Point(0, 0), 20);
     }
 
     private void findGreenColor() {
-        if (greenCount == -1) {
-            greenCount = 0;
-            for (int r = (int) topLeft.y; r < bottomRight.y; r++) {
-                for (int c = (int) topLeft.x; c < bottomRight.x; c++) {
-                    if (greenMask.get(r, c)[0] == 255) {
-                        greenCount++;
-                    }
-                }
-            }
-            type("Grn " + greenCount, topLeft, 50);
-        }
+        greenCount = countNonZero(greenMask);
+        type("Grn " + greenCount, new Point(0, 0), 50);
     }
 
     @Override
@@ -97,5 +85,9 @@ public class SquareCell implements ISquareCell {
         }
     }
 
-
+    void release(){
+        image.release();
+        redMask.release();
+        greenMask.release();
+    }
 }

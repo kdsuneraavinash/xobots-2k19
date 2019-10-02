@@ -1,3 +1,9 @@
 <resources>
     <string name="app_name">XOBotApp</string>
+    <string name="up_key">^</string>
+    <string name="start">Start</string>
+    <string name="is_red">Is Red</string>
+    <string name="reset">RESET</string>
+    <string name="predict">Predict</string>
+    <string name="prediction">My Move: NONE</string>
 </resources>

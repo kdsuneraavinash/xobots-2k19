@@ -6,6 +6,7 @@ import android.view.SurfaceView;
 import org.opencv.android.CameraBridgeViewBase;
 import org.opencv.android.OpenCVLoader;
 import org.opencv.core.Mat;
+import org.opencv.imgproc.Imgproc;
 
 public class Camera implements CameraBridgeViewBase.CvCameraViewListener2, ICamera {
     private OpenCVBaseLoader openCVBaseLoader;
@@ -31,7 +32,9 @@ public class Camera implements CameraBridgeViewBase.CvCameraViewListener2, ICame
 
     @Override
     public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
-        return currentProcessor.process(inputFrame.rgba());
+        Mat image = inputFrame.rgba();
+        Imgproc.cvtColor(image, image, Imgproc.COLOR_BGRA2BGR);
+        return currentProcessor.process(image);
     }
 
 
@@ -53,5 +56,10 @@ public class Camera implements CameraBridgeViewBase.CvCameraViewListener2, ICame
     @Override
     public void resume() {
         OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION, appContext, openCVBaseLoader);
+    }
+
+    @Override
+    public void attachImageProcessor(ImageProcessor processor) {
+        currentProcessor = processor;
     }
 }
