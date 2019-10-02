@@ -1,20 +1,26 @@
 package com.kdsuneraavinash.xobotapp;
 
-import androidx.appcompat.app.AppCompatActivity;
-
+import android.app.Activity;
 import android.os.Bundle;
+import android.view.WindowManager;
 
 import com.kdsuneraavinash.xobotapp.arduino.ArduinoAdapter;
 import com.kdsuneraavinash.xobotapp.arduino.IArduinoConnection;
+import com.kdsuneraavinash.xobotapp.camera.Camera;
 
-public class MainActivity extends AppCompatActivity {
+import org.opencv.android.CameraBridgeViewBase;
+
+public class MainActivity extends Activity {
     ArduinoAdapter arduinoAdapter;
+    Camera camera = new Camera(this);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         arduinoAdapter = new ArduinoAdapter(this);
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        camera.start((CameraBridgeViewBase) findViewById(R.id.java_surface_view));
     }
 
     @Override
@@ -31,6 +37,19 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        camera.pause();
         arduinoAdapter.onDestroy();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        camera.pause();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        camera.resume();
     }
 }

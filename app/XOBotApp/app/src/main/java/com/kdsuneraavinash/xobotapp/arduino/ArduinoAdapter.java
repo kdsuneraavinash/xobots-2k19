@@ -11,11 +11,11 @@ public class ArduinoAdapter {
     private static final String TAG = "";
     private Arduino arduino;
 
-    public ArduinoAdapter(Context context){
+    public ArduinoAdapter(Context context) {
         arduino = new Arduino(context);
     }
 
-    public void onStart(final IArduinoConnection arduinoConnection){
+    public void onStart(final IArduinoConnection arduinoConnection) {
         arduino.setArduinoListener(new ArduinoListener() {
             @Override
             public void onArduinoAttached(UsbDevice device) {
@@ -52,16 +52,16 @@ public class ArduinoAdapter {
         });
     }
 
-    public void onDestroy(){
+    public void onDestroy() {
         arduino.unsetArduinoListener();
         arduino.close();
     }
 
-    public void send(String message){
+    public void send(String message) {
         if (arduino.isOpened()) {
             Log.d(TAG, "send: (Sending) " + message);
             arduino.send(message.getBytes());
-        }else{
+        } else {
             throw new IllegalStateException("Arduino device is closed.");
         }
     }
