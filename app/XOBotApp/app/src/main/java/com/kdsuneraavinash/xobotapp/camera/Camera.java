@@ -6,7 +6,11 @@ import android.view.SurfaceView;
 import org.opencv.android.CameraBridgeViewBase;
 import org.opencv.android.OpenCVLoader;
 import org.opencv.core.Mat;
+import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
+
+import static org.opencv.core.Core.ROTATE_90_CLOCKWISE;
+import static org.opencv.core.Core.rotate;
 
 public class Camera implements CameraBridgeViewBase.CvCameraViewListener2, ICamera {
     private OpenCVBaseLoader openCVBaseLoader;
@@ -34,6 +38,9 @@ public class Camera implements CameraBridgeViewBase.CvCameraViewListener2, ICame
     public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
         Mat image = inputFrame.rgba();
         Imgproc.cvtColor(image, image, Imgproc.COLOR_BGRA2BGR);
+        Size size = image.size();
+        rotate(image, image, ROTATE_90_CLOCKWISE);
+        Imgproc.resize(image, image, size);
         return currentProcessor.process(image);
     }
 

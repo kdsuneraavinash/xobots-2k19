@@ -18,7 +18,6 @@ public class PointSelectionProcessor implements ImageProcessor {
 
     @Override
     public Mat process(Mat image) {
-        rotate(image, image, ROTATE_90_CLOCKWISE);
         drawLine(image, leftTop, rightTop);
         drawLine(image, leftTop, leftBottom);
         drawLine(image, rightBottom, leftBottom);

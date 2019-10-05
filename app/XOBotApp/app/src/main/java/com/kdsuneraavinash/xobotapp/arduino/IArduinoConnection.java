@@ -1,19 +1,20 @@
 package com.kdsuneraavinash.xobotapp.arduino;
 
 
+import android.app.Activity;
+
 public abstract class IArduinoConnection {
-    public void onArduinoAttached() {
+    final Activity activity;
+
+    protected IArduinoConnection(Activity activity) {
+        this.activity = activity;
     }
 
-    public void onArduinoDetached() {
-    }
+    public abstract void onConnected();
 
-    public void onArduinoMessage(String message) {
-    }
+    public abstract void onDisconnected();
 
-    public void onArduinoOpened() {
-    }
+    public abstract void onMessage(String message);
 
-    public void onUsbPermissionDenied() {
-    }
+    public abstract void onError(String error);
 }

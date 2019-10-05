@@ -32,7 +32,6 @@ public class GameProcessor implements ImageProcessor {
 
     @Override
     public Mat process(Mat image) {
-        rotate(image, image, ROTATE_90_CLOCKWISE);
         SymbolColor[][] colorGrid = recognizer.identifyGrid(image);
         gameBoard.generateGameBoard(colorGrid, color);
         gameBoard.drawBoard(image);
