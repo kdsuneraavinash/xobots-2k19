@@ -4,6 +4,7 @@
 LiquidCrystal lcd(12, 11, 5, 4, 6, 7);
 Servo servo1, servo2, servo3, servo4;
 
+boolean start = true;
 int take_pos = 10;
 int angle = 0;
 int mode = 1;
@@ -38,12 +39,12 @@ boolean butSElastState = false;
 boolean butSendState = false;
 boolean butSendlastState = false;
 
-String posData[13][20] = {{"1083", "2138", "3145"}, {"2138", "3145"}, {"1060", "2138", "3145"},
-  {"1085", "2115", "3125"}, {"2112", "3123"}, {"1057", "2115", "3125"},
-  {"1089", "2098", "3107"}, {"3107","2094"}, {"1053", "2094", "3107"},
-  {"1028", "3097", "2090"}, {"2082"}, {"1118", "3097", "2090"},  {"2157", "3020", "1005", "4100"}
+String posData[13][20] = {{"1099", "2138", "3145"}, {"2138", "3145"}, {"1076", "2138", "3145"},
+  {"1101", "2115", "3125"}, {"2112", "3123"}, {"1073", "2115", "3125"},
+  {"1105", "2098", "3107"}, {"3107", "2094"}, {"1069", "2094", "3107"},
+  {"1044", "3097", "2090"}, {"2082"}, {"1134", "3097", "2090"},  { "1167", "4100", "2130", "3046"}
 };
-String refPos[4] = {"1070", "2110", "3085", "4125"};
+String refPos[4] = {"1086", "2110", "3085", "4125"};
 
 ////////////////////////////
 uint8_t sPreAngle[4] = {0, 0, 0, 0};
@@ -72,11 +73,6 @@ void setup() {
   servo2.attach(9);
   servo3.attach(10);
   servo4.attach(13);
-  display_mode();
-  turnToPos(0);
-  delay(2000);
-  turnToPos(13);
-  delay(1000);
   //groupData();
   //  servo1.write(90);
   //  delay(200);
@@ -96,6 +92,14 @@ void loop() {
   //  while (1);
   display_mode();
   delay(100);
+  if (start == true) {
+        turnToPos(0);
+        delay(1000);
+        turnToPos(13);
+        delay(1000);
+        start = false;
+  }
+
   if (change_value == true) {
 
     boolean butIncValue = digitalRead(A10);//18
@@ -536,7 +540,7 @@ void servoTurn(int from, int to, int s_num) {
     for (int i = from; i >= to; i--) {
       if (s_num == 1) {
         servo1.write(i);
-        delay(20);
+        delay(25);
       } else if (s_num == 2) {
         servo2.write(i);
         delay(20);
