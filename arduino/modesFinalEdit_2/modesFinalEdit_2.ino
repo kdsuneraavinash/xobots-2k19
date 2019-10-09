@@ -41,7 +41,7 @@ boolean butSendlastState = false;
 
 String posData[13][20] = {{"1099", "2138", "3145"}, {"2138", "3145"}, {"1076", "2138", "3145"},
   {"1101", "2115", "3125"}, {"2112", "3123"}, {"1073", "2115", "3125"},
-  {"1105", "2098", "3107"}, {"3107", "2094"}, {"1069", "2094", "3107"},
+  {"1105", "3107", "2098"}, {"3107", "2094"}, {"1069", "3107", "2094"},
   {"1044", "3097", "2090"}, {"2082"}, {"1134", "3097", "2090"},  { "1167", "4100", "2130", "3046"}
 };
 String refPos[4] = {"1086", "2110", "3085", "4125"};
@@ -73,14 +73,6 @@ void setup() {
   servo2.attach(9);
   servo3.attach(10);
   servo4.attach(13);
-  //groupData();
-  //  servo1.write(90);
-  //  delay(200);
-  //  servo2.write(90);
-  //  delay(200);
-  //  servo3.write(90);
-  //  delay(200);
-  //  while (1);
 
   Serial.begin(9600);
 }
@@ -93,11 +85,11 @@ void loop() {
   display_mode();
   delay(100);
   if (start == true) {
-        turnToPos(0);
-        delay(1000);
-        turnToPos(13);
-        delay(1000);
-        start = false;
+    turnToPos(0);
+    delay(1000);
+    turnToPos(13);
+    delay(1000);
+    start = false;
   }
 
   if (change_value == true) {
@@ -194,73 +186,38 @@ void loop() {
     //////////
 
     if (Serial.available()) {
-      beep();
-      beep();
       String rec = Serial.readString();
-      lcd.setCursor(15, 0);
-      lcd.print(rec);
-      backToCenter(13);
-      turnToPos(take_pos);
-      grab_ball();
-      backToCenter(take_pos);
-      turnToPos((int)rec[0] - 48 + 1);
-      release_ball();
-      backToCenter((int)rec[0] - 48 + 1);
-      turnToPos(13);
-      take_pos++;
-      if (take_pos == 13) {
-        take_pos = 10;
+      if (rec != "won") {
+        beep();
+        beep();
+
+        lcd.setCursor(15, 0);
+        lcd.print(rec);
+        backToCenter(13);
+        turnToPos(take_pos);
+        grab_ball();
+        backToCenter(take_pos);
+        turnToPos((int)rec[0] - 48 + 1);
+        release_ball();
+        backToCenter((int)rec[0] - 48 + 1);
+        turnToPos(13);
+        take_pos++;
+        if (take_pos == 13) {
+          take_pos = 10;
+        }
+        Serial.println("1");
+      } else if (rec == "won") {
+        beep_won();
+
+        //        Serial.flush();
+        while (1);
+      } else if (rec == "draw") {
+        for (int i = 0; i < 10; i++) {
+          beep_long();
+        }
+        while (1);
       }
     }
-    //    delay(3000);
-    //    turnToPos(10);
-    //    grab_ball();
-    //    backToCenter(10);
-    //    turnToPos(7);
-    //    release_ball();
-    //    backToCenter(7);
-    //    while (1);
-    //    turnToPos(1);
-    //    delay(2000);
-    //    backToCenter(1);
-    //    while(1);
-    //    Serial.println('c');
-    //    Serial.println(posData[1][i]);
-    //    for (int i = 0; i < 20; i++) {
-    //      Serial.println(posData[1][i]);
-    //    }
-    //    turnToPos(1);
-    //    delay(2000);
-    //    backToCenter(1);
-    //    while (1);
-    //turnToPos(1);
-
-    //      //Serial.println();
-    //      r++;
-    //      if (r == 1) {
-    //        //EEPROM.put(eepromWriteAddr, "12345");
-    //      } else if (r == 2) {
-    //        EEPROM.get(0, a);
-    //        EEPROM.get(1, b);
-    //        EEPROM.get(2, c);
-    //        EEPROM.get(3, d);
-    //        EEPROM.get(4, e);
-    //      } else {
-    //        Serial.print(a);
-    //        Serial.print(b);
-    //        Serial.print(c);
-    //        Serial.print(d);
-    //        Serial.println(e);
-    //      }
-    //    }
-    //    int val = 255;
-    //    String val_a = (String)(servo_num) + (String)val;
-    //    char val_e[5];
-    //
-    //    val_a.toCharArray(val_e, 5);
-    //    int val_g = 0;
-    //    sscanf(val_e, "%d", &val_g);
-    //    Serial.println(val_g);
   }
 }
 void decrease() {
@@ -438,96 +395,7 @@ String getString(int len, String str, int start) {
   }
   return Word;
 }
-//void groupData() {
-//  String data;
-//  int last_pos = 1;
-//  int index_one = 0;
-//  int index_two = 0;
-//  while (1) {
-//    data = serialArray[index_one];
-//    if (data == "f") {
-//      break;
-//    } else {
-//      int pos = ((int)data[0] - 48);
-//      if (last_pos != pos) {
-//        index_two = 0;
-//        last_pos = pos;
-//        posData[pos - 1][index_two] = getString(4, data);
-//      } else {
-//        posData[pos - 1][index_two] = getString(4, data);
-//        index_two++;
-//      }
-//    }
-//    index_one++;
-//  }
-//}
-void turnToPos(int num) {
-  String val;
-  int servoNum;
-  int angle;
-  sPreAngle[0] = strToInt(getString(3, refPos[0], 1));
-  sPreAngle[1] = strToInt(getString(3, refPos[1], 1));
-  sPreAngle[2] = strToInt(getString(3, refPos[2], 1));
-  sPreAngle[3] = strToInt(getString(3, refPos[3], 1));
-  if (num == 0) {
-    for (int i = 0; i < sizeof(refPos) / sizeof(refPos[0]); i++) {
-      val = refPos[i];
-      servoNum = (int)(val[0]) - 48;
-      if (first == 0) {
-        first = servoNum;
-      } else if (second == 0) {
-        second = servoNum;
-      } else if (third == 0) {
-        third = servoNum;
-      } else if (fourth == 0) {
-        fourth = servoNum;
-      }
-      angle = strToInt(getString(3, val, 1));
-      //      Serial.println(angle);
-      if (servoNum == 1) {
-        servo1.write(angle);
-        delay(25);
-      } else if (servoNum == 2) {
-        servo2.write(angle);
-        delay(20);
-      } else if (servoNum == 3) {
-        servo3.write(angle);
-        delay(20);
-      } else if (servoNum == 4) {
-        servo4.write(angle);
-        delay(20);
-      }
-    }
-  } else {
-    for (int i = 0; i < sizeof(posData[num - 1]) / sizeof(posData[num - 1][0]); i++) {
-      val = posData[num - 1][i];
-      servoNum = (int)(val[0]) - 48;
-      if (first == 0) {
-        first = servoNum;
-      } else if (second == 0) {
-        second = servoNum;
-      } else if (third == 0) {
-        third = servoNum;
-      } else if (fourth == 0) {
-        fourth = servoNum;
-      }
-      angle = strToInt(getString(3, val, 1));
-      if (servoNum == 1) {
-        servoTurn(sPreAngle[0], angle, 1);
-        sPreAngle[0] = angle;
-      } else if (servoNum == 2) {
-        servoTurn(sPreAngle[1], angle, 2);
-        sPreAngle[1] = angle;
-      } else if (servoNum == 3) {
-        servoTurn(sPreAngle[2], angle, 3);
-        sPreAngle[2] = angle;
-      } else if (servoNum == 4) {
-        servoTurn(sPreAngle[3], angle, 4);
-        sPreAngle[3] = angle;
-      }
-    }
-  }
-}
+
 int strToInt(String str) {
   char val_e[4];
   str.toCharArray(val_e, 4);
@@ -575,43 +443,34 @@ void servoTurn(int from, int to, int s_num) {
   }
 }
 
-void backToCenter(int num) {
-  String val;
-  int servoNum;
-  int angle;
 
-  for (int i = (sizeof(posData[num - 1]) / sizeof(posData[num - 1][0])) - 1; i >= 0; i--) {
-    val = posData[num - 1][i];
-    servoNum = (int)(val[0]) - 48;
-    angle = strToInt(getString(3, val, 1));
-    if (servoNum == 1) {
-      servoTurn(sPreAngle[0], angle, 1);
-      sPreAngle[0] = angle;
-    } else if (servoNum == 2) {
-      servoTurn(sPreAngle[1], angle, 2);
-      sPreAngle[1] = angle;
-    } else if (servoNum == 3) {
-      servoTurn(sPreAngle[2], angle, 3);
-      sPreAngle[2] = angle;
-    } else if (servoNum == 4) {
-      servoTurn(sPreAngle[3], angle, 4);
-      sPreAngle[3] = angle;
-    }
-  }
-  servoTurn(sPreAngle[fourth - 1], strToInt(getString(3, refPos[fourth - 1], 1)), fourth);
-  servoTurn(sPreAngle[third - 1], strToInt(getString(3, refPos[third - 1], 1)), third);
-  servoTurn(sPreAngle[second - 1], strToInt(getString(3, refPos[second - 1], 1)), second);
-  servoTurn(sPreAngle[first - 1], strToInt(getString(3, refPos[first - 1], 1)), first);
-  first = 0;
-  second = 0;
-  third = 0;
-  fourth = 0;
-}
 void beep() {
   digitalWrite(A2, HIGH);
   delay(50);
   digitalWrite(A2, LOW);
   delay(50);
+}
+void beep_long() {
+  digitalWrite(A2, HIGH);
+  delay(300);
+  digitalWrite(A2, LOW);
+  delay(50);
+}
+void beep_won() {
+  beep();
+  beep();
+  beep_long();
+  beep();
+  beep();
+  beep_long();
+  beep();
+  beep();
+  beep_long();
+  beep();
+  beep();
+  beep();
+  beep();
+  beep_long();
 }
 void grab_ball() {
   int servo_val = strToInt(getString(3, refPos[3], 1));
