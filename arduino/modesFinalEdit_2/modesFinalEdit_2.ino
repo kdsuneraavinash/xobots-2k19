@@ -9,6 +9,10 @@ int take_pos = 10;
 int angle = 0;
 int mode = 1;
 int servo_num = 1;
+////////
+int s1_spd = 0;
+int other_spd = 0;
+////////
 unsigned long butDecTime = 0;
 unsigned long butIncTime = 0;
 unsigned long butSetTime = 0;
@@ -73,24 +77,20 @@ void setup() {
   servo2.attach(9);
   servo3.attach(10);
   servo4.attach(13);
+  //  low_spd();
+  high_spd();
+
+  turnToPos(0);
+  delay(1000);
+  turnToPos(13);
+  delay(1000);
 
   Serial.begin(9600);
 }
 
 void loop() {
-  //  String a = "002";
-  //  Serial.println(strToInt(a));
-  //  turnToPos(1);
-  //  while (1);
   display_mode();
   delay(100);
-  if (start == true) {
-    turnToPos(0);
-    delay(1000);
-    turnToPos(13);
-    delay(1000);
-    start = false;
-  }
 
   if (change_value == true) {
 
@@ -206,279 +206,18 @@ void loop() {
           take_pos = 10;
         }
         Serial.println("1");
-      } else if (rec == "won") {
-        beep_won();
-
-        //        Serial.flush();
-        while (1);
-      } else if (rec == "draw") {
-        for (int i = 0; i < 10; i++) {
-          beep_long();
-        }
-        while (1);
       }
+      //      else if (rec == "won") {
+      //        beep_won();
+      //
+      //        //        Serial.flush();
+      //        while (1);
+      //      } else if (rec == "draw") {
+      //        for (int i = 0; i < 10; i++) {
+      //          beep_long();
+      //        }
+      //        while (1);
+      //      }
     }
   }
-}
-void decrease() {
-  beep();
-  rotate_servo = false;
-  if (set_mode == false) {
-    if (mode <= 1) {
-      mode = 1;
-    } else {
-      mode--;
-    }
-  } else {
-    if (servo_num <= 1) {
-      servo_num = 1;
-    } else {
-      servo_num--;
-    }
-  }
-}
-void increase() {
-
-  rotate_servo = false;
-  if (set_mode == false) {
-    if (mode >= 14) {
-      mode = 14;
-    } else {
-      mode++;
-    }
-  } else {
-    if (servo_num >= 4) {
-      servo_num = 4;
-    } else {
-      servo_num++;
-    }
-
-  }
-  beep();
-}
-void set() {
-
-  if (set_mode == false) {
-    set_mode = true;
-    edit_move = false;
-  } else if (set_mode == true && edit_move == true) {
-    set_mode = false ;
-    edit_move = false;
-  } else {
-    edit_move = true;
-  }
-  beep();
-}
-
-void display_mode() {
-  lcd.clear();
-  if (mode == 1) {
-    lcd.setCursor(0, 0);
-    lcd.print("Play Mode");
-  } else {
-    lcd.setCursor(0, 0);
-    lcd.print("Position " + String(mode - 1));
-    if (set_mode == true) {
-      lcd.setCursor(0, 1);
-      angle = map(analogRead(A3), 0, 1023, 0, 180);
-      if (rotate_servo == true) {
-        if (servo_num == 1) {
-          servo1.write(angle);
-          delay(15);
-        } else if (servo_num == 2) {
-          servo2.write(angle);
-          delay(15);
-        } else if (servo_num == 3) {
-          servo3.write(angle);
-          delay(15);
-        } else if (servo_num == 4) {
-          servo4.write(angle);
-          delay(15);
-        }
-      }
-      lcd.print("Servo " + String(servo_num) + " " + servo_val(angle)); //
-    }
-  }
-  if (edit_move == true) {
-    lcd.setCursor(15, 0);
-    lcd.print("*");
-  }
-}
-
-String servo_val(int val) {
-  String str_val = (String)val;
-  String spaces = "" ;
-  for (int i = 0; i < (3 - str_val.length()); i++) {
-    spaces += " ";
-  }
-  return  str_val + spaces;
-}
-
-void save_edit() {
-  beep();
-  if (mode == 1) {
-    if (change_value == false) {
-      change_value = true;
-    } else {
-      change_value = false;
-    }
-
-  } else if (set_mode == false) {
-    delay(3000);
-    turnToPos(mode - 1);
-    delay(2000);
-    backToCenter(mode - 1);
-  } else {
-    if (edit_move == true) {
-      angle = map(analogRead(A3), 0, 1023, 0, 180);
-      String val_a = digit_change((mode - 1), 2) + (String)(servo_num) + digit_change(angle, 3);
-      //Serial.println(val_a);
-    }
-    rotate_servo = true;
-  }
-
-}
-
-String digit_change(int val, int count) {
-  String str_val = (String)val;
-  int len = str_val.length();
-  String final_str = "";
-  if (len < count) {
-    for (int i = 0; i < count - len; i++) {
-      final_str += "0";
-    }
-    final_str += str_val;
-  } else {
-    final_str = str_val;
-  }
-  return final_str;
-}
-void getSerialData() {
-  String data;
-  int last_pos = 1;
-  int index_one = 0;
-  int index_two = 0;
-
-  //  String serialArray[200] = {"11180", "12120", "11030", "13130"};
-
-  boolean repeat = true;
-  Serial.println('g');
-  while (repeat) {
-    Serial.println('r');
-    while (!Serial.available());
-    while (Serial.available()) {
-      data = Serial.readString();
-      /////
-      int pos = ((int)(data[0] + data[1]) - 48);
-      if (last_pos != pos) {
-        index_two = 0;
-        last_pos = pos;
-        posData[pos - 1][index_two] = getString(4, data, 2);
-      } else {
-        posData[pos - 1][index_two] = getString(4, data, 2);
-        index_two++;
-      }
-      ////
-      if (data == "f") {
-        repeat = false;
-      }
-      Serial.flush();
-    }
-    lcd.setCursor(0, 0);
-    lcd.print(data);
-  }
-}
-String getString(int len, String str, int start) {
-  String Word = "";
-  for (int i = start; i < len + 1; i++) {
-    Word += str[i];
-  }
-  return Word;
-}
-
-int strToInt(String str) {
-  char val_e[4];
-  str.toCharArray(val_e, 4);
-  int val_g = 0;
-  sscanf(val_e, "%d", &val_g);
-  return val_g;
-}
-void servoTurn(int from, int to, int s_num) {
-  if (from > to) {
-    for (int i = from; i >= to; i--) {
-      if (s_num == 1) {
-        servo1.write(i);
-        delay(25);
-      } else if (s_num == 2) {
-        servo2.write(i);
-        delay(20);
-      } else if (s_num == 3) {
-        servo3.write(i);
-        delay(20);
-      } else if (s_num == 4) {
-        servo4.write(i);
-        delay(20);
-      } else {
-
-      }
-    }
-  } else {
-    for (int i = from; i <= to; i++) {
-      if (s_num == 1) {
-        servo1.write(i);
-        delay(20);
-      } else if (s_num == 2) {
-        servo2.write(i);
-        delay(20);
-      } else if (s_num == 3) {
-        servo3.write(i);
-        delay(20);
-      } else if (s_num == 4) {
-        servo4.write(i);
-        delay(20);
-      } else {
-
-      }
-    }
-  }
-}
-
-
-void beep() {
-  digitalWrite(A2, HIGH);
-  delay(50);
-  digitalWrite(A2, LOW);
-  delay(50);
-}
-void beep_long() {
-  digitalWrite(A2, HIGH);
-  delay(300);
-  digitalWrite(A2, LOW);
-  delay(50);
-}
-void beep_won() {
-  beep();
-  beep();
-  beep_long();
-  beep();
-  beep();
-  beep_long();
-  beep();
-  beep();
-  beep_long();
-  beep();
-  beep();
-  beep();
-  beep();
-  beep_long();
-}
-void grab_ball() {
-  int servo_val = strToInt(getString(3, refPos[3], 1));
-  servoTurn(servo_val, 100, 4);
-}
-void release_ball() {
-
-  int servo_val = strToInt(getString(3, refPos[3], 1));
-  servoTurn(100, servo_val, 4);
-  beep();
 }
