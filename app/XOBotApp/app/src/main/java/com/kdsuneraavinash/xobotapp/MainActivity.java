@@ -17,6 +17,7 @@ import com.kdsuneraavinash.xobotapp.arduino.ArduinoBluetoothManager;
 import com.kdsuneraavinash.xobotapp.arduino.ArduinoManager;
 import com.kdsuneraavinash.xobotapp.arduino.IArduinoConnection;
 import com.kdsuneraavinash.xobotapp.camera.Camera;
+import com.kdsuneraavinash.xobotapp.camera.FinishedPlayer;
 import com.kdsuneraavinash.xobotapp.camera.GameProcessor;
 import com.kdsuneraavinash.xobotapp.camera.PointSelectionProcessor;
 import com.kdsuneraavinash.xobotapp.camera.PredictionListener;
@@ -33,7 +34,6 @@ public class MainActivity extends Activity implements PredictionListener {
     Camera camera = new Camera(this);
     private PointSelectionProcessor pointSelectionProcessor;
     private GameProcessor gameProcessor;
-    private JoystickController joystickRightBottom;
 
     private Joystick joystickTL;
     private Joystick joystickTR;
@@ -43,6 +43,9 @@ public class MainActivity extends Activity implements PredictionListener {
     private Switch redSwitch;
     private TextView predictionText;
     private TextView arduinoText;
+
+    private int lastPrediction;
+    private FinishedPlayer finishedPlayer;
 
     State currentState;
 
@@ -71,20 +74,22 @@ public class MainActivity extends Activity implements PredictionListener {
 
 
         currentState = State.INIT;
-        Point leftTop = new Point(514, 189);
-        Point rightTop = new Point(931, 189);
-        Point leftBottom = new Point(499, 525);
-        Point rightBottom = new Point(1000, 520);
+        Point leftTop = new Point(101, 125);
+        Point rightTop = new Point(641, 53);
+        Point leftBottom = new Point(271, 346);
+        Point rightBottom = new Point(902, 243);
         JoystickController joystickLeftTop = new JoystickController(leftTop);
         JoystickController joystickLeftBottom = new JoystickController(leftBottom);
         JoystickController joystickRightTop = new JoystickController(rightTop);
-        joystickRightBottom = new JoystickController(rightBottom);
+        JoystickController joystickRightBottom = new JoystickController(rightBottom);
         pointSelectionProcessor = new PointSelectionProcessor();
         pointSelectionProcessor.setLeftTop(leftTop);
         pointSelectionProcessor.setRightTop(rightTop);
         pointSelectionProcessor.setLeftBottom(leftBottom);
         pointSelectionProcessor.setRightBottom(rightBottom);
         gameProcessor = new GameProcessor(leftTop, rightTop, leftBottom, rightBottom, this);
+
+        lastPrediction = 0;
 
         joystickLeftTop.attach(joystickTL);
         joystickRightTop.attach(joystickTR);
@@ -171,7 +176,6 @@ public class MainActivity extends Activity implements PredictionListener {
                 startButton.setText(R.string.reset);
                 currentState = State.STARTED;
                 predictionText.setText(R.string.prediction);
-                arduinoManager.send("Hello");
                 break;
             case STARTED:
                 camera.attachImageProcessor(pointSelectionProcessor);
@@ -193,12 +197,18 @@ public class MainActivity extends Activity implements PredictionListener {
 
     @Override
     public void onPredictionUpdate(final int prediction) {
+        lastPrediction = prediction;
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 predictionText.setText("My Move: " + prediction);
             }
         });
+    }
+
+    @Override
+    public void onFinishedUpdate(FinishedPlayer player) {
+        // finishedPlayer = player;
     }
 
     private class ArduinoConnection extends IArduinoConnection {
@@ -240,6 +250,19 @@ public class MainActivity extends Activity implements PredictionListener {
                     arduinoText.setText(message);
                 }
             });
+            try {
+                int number = Integer.parseInt(message);
+                if (number == 0) {
+                    arduinoManager.send(Integer.valueOf(lastPrediction).toString());
+                } else if (number == 1) {
+                    if (finishedPlayer == FinishedPlayer.PLAYER) {
+                        arduinoManager.send("won");
+                    } else if (finishedPlayer == FinishedPlayer.DRAW) {
+                        arduinoManager.send("draw");
+                    }
+                }
+            } catch (NumberFormatException ignored) {
+            }
         }
 
         @Override

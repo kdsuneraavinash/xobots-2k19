@@ -7,8 +7,6 @@ import org.opencv.core.Point;
 import org.opencv.imgproc.Imgproc;
 
 import static org.opencv.core.Core.FONT_HERSHEY_SIMPLEX;
-import static org.opencv.core.Core.ROTATE_90_CLOCKWISE;
-import static org.opencv.core.Core.rotate;
 
 public class PointSelectionProcessor implements ImageProcessor {
     private Point leftTop;

@@ -9,8 +9,8 @@ import static org.opencv.core.Core.FONT_HERSHEY_SIMPLEX;
 import static org.opencv.core.Core.countNonZero;
 
 public class SquareCell implements ISquareCell {
-    private static final int RED_COUNT_THRESH = 500;
-    private static final int GREEN_COUNT_THRESH = 500;
+    private static final int RED_COUNT_THRESH = 2000;
+    private static final int GREEN_COUNT_THRESH = 2000;
 
     private final Mat redMask;
     private final Mat greenMask;

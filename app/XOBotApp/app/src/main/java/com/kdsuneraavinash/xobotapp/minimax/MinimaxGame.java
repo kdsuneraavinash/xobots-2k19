@@ -1,5 +1,7 @@
 package com.kdsuneraavinash.xobotapp.minimax;
 
+import com.kdsuneraavinash.xobotapp.camera.FinishedPlayer;
+
 public class MinimaxGame implements IMinimaxGame {
     private SymbolType[][] currentBoard = new SymbolType[3][3];
     private SymbolType playerSymbol;
@@ -160,6 +162,20 @@ public class MinimaxGame implements IMinimaxGame {
     public int getBoardPrediction() {
         ResultMove resultMove = maximize(-2, 2);
         return resultMove.getiPos() * 3 + resultMove.getjPos();
+    }
+
+    @Override
+    public FinishedPlayer getWinState() {
+        SymbolType winner = isEnd();
+        if (winner == playerSymbol) {
+            return FinishedPlayer.PLAYER;
+        } else if (winner == enemySymbol) {
+            return FinishedPlayer.ENEMY;
+        } else if (winner == SymbolType.NONE) {
+            return FinishedPlayer.DRAW;
+        }
+
+        return FinishedPlayer.NONE;
     }
 
     public SymbolType[][] getCurrentBoard() {

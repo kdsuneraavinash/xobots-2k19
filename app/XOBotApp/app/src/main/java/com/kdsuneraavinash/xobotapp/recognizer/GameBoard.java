@@ -45,10 +45,10 @@ public class GameBoard {
         int charW = 64;
         int charH = 64;
 
-        Imgproc.rectangle(image, new Point(0, 0), new Point(charW * 3 + 40, charW * 3 + 20), Colors.COLOR_WHITE, -1);
+        Imgproc.rectangle(image, new Point(60, 60), new Point(charW * 3 + 100, charW * 3 + 80), Colors.COLOR_WHITE, -1);
         for (int i = 0; i < 3; i++) {
             for (int j = 0; j < 3; j++) {
-                type(image, symbolToText(gameBoard[i][j]), new Point(charW * j + 20, charH * (i + 1)));
+                type(image, symbolToText(gameBoard[i][j]), new Point(charW * j + 80, charH * (i + 1) + 60));
             }
         }
     }

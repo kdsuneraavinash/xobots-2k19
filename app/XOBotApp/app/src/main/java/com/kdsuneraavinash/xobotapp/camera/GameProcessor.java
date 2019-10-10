@@ -9,9 +9,6 @@ import com.kdsuneraavinash.xobotapp.recognizer.SymbolColor;
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
 
-import static org.opencv.core.Core.ROTATE_90_CLOCKWISE;
-import static org.opencv.core.Core.rotate;
-
 public class GameProcessor implements ImageProcessor {
     final private Recognizer recognizer;
     final private PredictionListener listener;
@@ -37,6 +34,7 @@ public class GameProcessor implements ImageProcessor {
         gameBoard.drawBoard(image);
         SymbolType[][] xoGrid = gameBoard.getGameBoard();
         minimaxGame.setCurrentBoard(xoGrid);
+        onFinishedUpdate(minimaxGame.getWinState());
         predictionUpdate(minimaxGame.getBoardPrediction());
         return image;
     }
@@ -44,4 +42,12 @@ public class GameProcessor implements ImageProcessor {
     private void predictionUpdate(int prediction){
         listener.onPredictionUpdate(prediction);
     }
+
+
+    private void onFinishedUpdate(FinishedPlayer player){
+        // On finished is always notified first
+        listener.onFinishedUpdate(player);
+    }
+
+
 }
