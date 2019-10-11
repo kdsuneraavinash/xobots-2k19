@@ -34,8 +34,12 @@ boolean butSetlastState = false;
 boolean butSEState = false;
 boolean butSElastState = false;
 
-String posData[10][20] = {{"1180", "2120", "1030", "3130"}, {"1000", "2180", "1090", "3180"}};
-String refPos[3] = {"1090", "2090", "3090"};
+String posData[13][20] = {{"1083", "2138", "3145"}, {"2138", "3145"}, {"1060", "2138", "3145"},
+  {"1085", "2115", "3125"}, {"2112", "3123"}, {"1057", "2115", "3125"},
+  {"1089", "2098", "3107"}, {"2094", "3107"}, {"1053", "2094", "3107"},
+  {"2082"}, {"1118", "3097", "2090"}, {"1028", "3097", "2090"}
+};
+String refPos[4] = {"1070", "2110", "3085", "4125"};
 
 ////////////////////////////
 uint8_t sPreAngle[3] = {0, 0, 0};
@@ -47,15 +51,17 @@ uint8_t third = 0;
 
 void setup() {
 
-  pinMode(A9, INPUT_PULLUP);//2
-  pinMode(A8, INPUT_PULLUP);//3
-  pinMode(2, INPUT_PULLUP);
-  pinMode(3, INPUT_PULLUP);
+  pinMode(A8, INPUT_PULLUP);
+  pinMode(A9, INPUT_PULLUP);//A9
+  pinMode(A10, INPUT_PULLUP);//A8
+  pinMode(A11, INPUT_PULLUP);
+  pinMode(A12, INPUT_PULLUP);
   pinMode(A3, INPUT);
   pinMode(A2, OUTPUT);
+  // pinMode(A11, OUTPUT);
 
   //attachInterrupt(digitalPinToInterrupt(3), save_edit, RISING);//19
-
+  //digitalWrite(A11,HIGH);
   lcd.begin(16, 2);
   servo1.attach(8);
   servo2.attach(9);
@@ -83,10 +89,10 @@ void loop() {
   delay(100);
   if (change_value == true) {
 
-    boolean butIncValue = digitalRead(2);//18
-    boolean butDecValue = digitalRead(A9);//2
-    boolean butSetValue = digitalRead(A8);//3
-    boolean butSEValue = digitalRead(3);
+    boolean butIncValue = digitalRead(A10);//18
+    boolean butDecValue = digitalRead(A12);//A9
+    boolean butSetValue = digitalRead(A11);//A8
+    boolean butSEValue = digitalRead(A9);
     //Decrement button
     if (butDecState != butDeclastState) {
       butDecTime = millis();
@@ -144,7 +150,7 @@ void loop() {
     butSElastState = butSEValue;
   } else {
     //SE button
-    boolean butSEValue = digitalRead(3);
+    boolean butSEValue = digitalRead(A9);
     if (butSEState != butSElastState) {
       butSetTime = millis();
     }
@@ -157,7 +163,20 @@ void loop() {
       }
     }
     butSElastState = butSEValue;
-    //delay(5000);
+
+    //////////////////
+    //    delay(3000);
+    //    turnToPos(10);
+    //    grab_ball();
+    //    backToCenter(10);
+    //    turnToPos(7);
+    //    release_ball();
+    //    backToCenter(7);
+    //    while (1);
+    //    turnToPos(1);
+    //    delay(2000);
+    //    backToCenter(1);
+    //    while(1);
     //    Serial.println('c');
     //    Serial.println(posData[1][i]);
     //    for (int i = 0; i < 20; i++) {
@@ -261,10 +280,16 @@ void display_mode() {
       if (rotate_servo == true) {
         if (servo_num == 1) {
           servo1.write(angle);
+          delay(15);
         } else if (servo_num == 2) {
           servo2.write(angle);
+          delay(15);
         } else if (servo_num == 3) {
           servo3.write(angle);
+          delay(15);
+        } else if (servo_num == 4) {
+          servo4.write(angle);
+          delay(15);
         }
       }
       lcd.print("Servo " + String(servo_num) + " " + servo_val(angle)); //
@@ -286,16 +311,19 @@ String servo_val(int val) {
 }
 
 void save_edit() {
-
+  beep();
   if (mode == 1) {
     if (change_value == false) {
       change_value = true;
     } else {
       change_value = false;
     }
-    beep();
+
   } else if (set_mode == false) {
+    delay(3000);
     turnToPos(mode - 1);
+    delay(2000);
+    backToCenter(mode - 1);
   } else {
     if (edit_move == true) {
       angle = map(analogRead(A3), 0, 1023, 0, 180);
@@ -303,7 +331,6 @@ void save_edit() {
       //Serial.println(val_a);
     }
     rotate_servo = true;
-    beep();
   }
 
 }
@@ -409,16 +436,29 @@ void turnToPos(int num) {
       //      Serial.println(angle);
       if (servoNum == 1) {
         servo1.write(angle);
+        delay(15);
       } else if (servoNum == 2) {
         servo2.write(angle);
+        delay(15);
       } else if (servoNum == 3) {
         servo3.write(angle);
+        delay(15);
+      } else if (servoNum == 4) {
+        servo4.write(angle);
+        delay(15);
       }
     }
   } else {
     for (int i = 0; i < sizeof(posData[num - 1]) / sizeof(posData[num - 1][0]); i++) {
       val = posData[num - 1][i];
       servoNum = (int)(val[0]) - 48;
+      if (first == 0) {
+        first = servoNum;
+      } else if (second == 0) {
+        second = servoNum;
+      } else if (third == 0) {
+        third = servoNum;
+      }
       angle = strToInt(getString(3, val, 1));
       if (servoNum == 1) {
         servoTurn(sPreAngle[0], angle, 1);
@@ -445,16 +485,16 @@ void servoTurn(int from, int to, int s_num) {
     for (int i = from; i >= to; i--) {
       if (s_num == 1) {
         servo1.write(i);
-        delay(5);
+        delay(35);
       } else if (s_num == 2) {
         servo2.write(i);
-        delay(5);
+        delay(15);
       } else if (s_num == 3) {
         servo3.write(i);
-        delay(5);
+        delay(15);
       } else if (s_num == 4) {
         servo4.write(i);
-        delay(5);
+        delay(15);
       } else {
 
       }
@@ -463,16 +503,16 @@ void servoTurn(int from, int to, int s_num) {
     for (int i = from; i <= to; i++) {
       if (s_num == 1) {
         servo1.write(i);
-        delay(5);
+        delay(35);
       } else if (s_num == 2) {
         servo2.write(i);
-        delay(5);
+        delay(15);
       } else if (s_num == 3) {
         servo3.write(i);
-        delay(5);
+        delay(15);
       } else if (s_num == 4) {
         servo4.write(i);
-        delay(5);
+        delay(15);
       } else {
 
       }
@@ -512,4 +552,12 @@ void beep() {
   delay(50);
   digitalWrite(A2, LOW);
   delay(50);
+}
+void grab_ball() {
+  int servo_val = strToInt(getString(3, refPos[3], 1));
+  servoTurn(servo_val, 100, 4);
+}
+void release_ball() {
+  int servo_val = strToInt(getString(3, refPos[3], 1));
+  servoTurn(100, servo_val, 4);
 }

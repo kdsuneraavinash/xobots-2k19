@@ -7,56 +7,63 @@ import android.util.Log;
 import me.aflak.arduino.Arduino;
 import me.aflak.arduino.ArduinoListener;
 
-public class ArduinoAdapter {
-    private static final String TAG = "";
+public class ArduinoUsbManager extends ArduinoManager {
+    private static final String TAG = "ArduinoUsbManager";
     private Arduino arduino;
 
-    public ArduinoAdapter(Context context) {
+    public ArduinoUsbManager(Context context) {
+        super(context);
         arduino = new Arduino(context);
     }
 
+    @Override
     public void onStart(final IArduinoConnection arduinoConnection) {
         arduino.setArduinoListener(new ArduinoListener() {
             @Override
             public void onArduinoAttached(UsbDevice device) {
-                Log.d(TAG, "onArduinoAttached: Device attached");
+                Log.d(TAG, "onConnected: Device attached");
                 arduino.open(device);
-                arduinoConnection.onArduinoAttached();
+                arduinoConnection.onConnected();
             }
 
             @Override
             public void onArduinoDetached() {
-                Log.d(TAG, "onArduinoDetached: Device detached");
-                arduinoConnection.onArduinoDetached();
+                Log.d(TAG, "onDisconnected: Device detached");
+                arduinoConnection.onDisconnected();
             }
 
             @Override
             public void onArduinoMessage(byte[] bytes) {
                 String message = new String(bytes);
-                Log.d(TAG, "onArduinoMessage: (Received) " + message);
-                arduinoConnection.onArduinoMessage(message);
+                Log.d(TAG, "onMessage: (Received) " + message);
+                arduinoConnection.onMessage(message);
             }
 
             @Override
             public void onArduinoOpened() {
                 Log.d(TAG, "onArduinoOpened: Connection Opened");
-                arduinoConnection.onArduinoOpened();
             }
 
             @Override
             public void onUsbPermissionDenied() {
-                Log.d(TAG, "onUsbPermissionDenied: Permission Denied");
+                Log.d(TAG, "onError: Permission Denied");
                 arduino.reopen();
-                arduinoConnection.onUsbPermissionDenied();
+                arduinoConnection.onError("Permission Denied");
             }
         });
     }
 
+    @Override
     public void onDestroy() {
         arduino.unsetArduinoListener();
         arduino.close();
     }
 
+    @Override
+    public void onStop() {
+    }
+
+    @Override
     public void send(String message) {
         if (arduino.isOpened()) {
             Log.d(TAG, "send: (Sending) " + message);
@@ -64,5 +71,9 @@ public class ArduinoAdapter {
         } else {
             throw new IllegalStateException("Arduino device is closed.");
         }
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode) {
     }
 }

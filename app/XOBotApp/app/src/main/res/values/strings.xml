@@ -6,4 +6,7 @@
     <string name="reset">RESET</string>
     <string name="predict">Predict</string>
     <string name="prediction">My Move: NONE</string>
+    <string name="arduino_connection_status">Arduino Connection Status</string>
+    <string name="disconnected">Disconnected</string>
+    <string name="connected">Connected</string>
 </resources>
